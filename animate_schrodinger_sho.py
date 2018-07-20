@@ -74,16 +74,16 @@ V_x = qho.potential
 alpha = m * omega / hbar
 L = 1/np.sqrt(alpha) #length scale
 
-# # specify initial velocity
-v0 = 0.1*omega*L #should not be much larger than omega*L to keep wavefunction shape coherent
+# # specify initial velocity for coherence state
+v0 = 0.3*omega*L #should not be much larger than omega*L to keep wavefunction shape coherent
 p0 = m * v0
 k0 = p0 / hbar
 
 # specify initial wavefunction
 
 #psi_x0 = qho.eigenFunction(n = 0)
-#psi_x0 = qho.coherenceState(v0, n = 0)
-psi_x0 = qho.squeezeState(omegasq = 0.1)
+psi_x0 = qho.coherenceState(v0, n = 0)
+#psi_x0 = qho.squeezeState(omegasq = 0.1)
 
 # define the Schrodinger object which performs the calculations
 S = Schrodinger(x=x,

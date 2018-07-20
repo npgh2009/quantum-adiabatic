@@ -126,7 +126,7 @@ class Schrodinger(object):
     
     # def _set_V_x(self, V_x):
     #     assert V_x.shape == self.V_x.shape
-    #     self.V_x = V_x.copy()
+    #     self.V_x = V_x
 
     psi_x = property(_get_psi_x, _set_psi_x)
     psi_k = property(_get_psi_k, _set_psi_k)
