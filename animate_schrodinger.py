@@ -10,11 +10,11 @@ License: BSD
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
-from schrodinger import Schrodinger
+from schrodinger_time_dependent import Schrodinger
 from HarmonicOscillator import HarmonicOscillator
+from PolynomialPotential import PolynomialPotential
+from TimeDependentPotential import TimeDependentPotential
 
-
-######################################################################
 # Helper functions for gaussian wave-packets
 def gauss_x(x, a, x0, k0):
     """
@@ -23,37 +23,9 @@ def gauss_x(x, a, x0, k0):
     return ((a * np.sqrt(np.pi)) ** (-0.5)
             * np.exp(-0.5 * ((x - x0) * 1. / a) ** 2 + 1j * x * k0))
 
-
-def gauss_k(k, a, x0, k0):
-    """
-    analytical fourier transform of gauss_x(x), above
-    """
-    return ((a / np.sqrt(np.pi)) ** 0.5
-            * np.exp(-0.5 * (a * (k - k0)) ** 2 - 1j * (k - k0) * x0))
-
-
-######################################################################
-# Utility functions for running the animation
-def theta(x):
-    """
-    theta function :
-      returns 0 if x<=0, and 1 if x>0
-    """
-    x = np.asarray(x)
-    y = np.zeros(x.shape)
-    y[x > 0] = 1.0
-    return y
-
-
-def square_barrier(x, width, height):
-    return height * (theta(x) - theta(x - width))
-
-######################################################################
-# Create the animation
-
 # specify time steps and duration
 dt = 0.01
-N_steps = 50
+N_steps = 20
 t_max = 120
 frames = int(t_max / float(N_steps * dt))
 
@@ -62,15 +34,19 @@ hbar = 1.0   # planck's constant
 m = 0.5      # particle mass
 
 # specify range in x coordinate
-N = 20
+N = 50
 dx = 0.1
 nx = int(N/dx)*2 + 1
 x = np.linspace(-N, N, nx)
 
 # specify potential
-omega = 0.1
+omega = 0.7 #the higher, the sharper is the potential, and eigenfns more localized
 qho = HarmonicOscillator(x = x, omega = omega, hbar = hbar, m = m)
-V_x = qho.potential
+lambd = 0.1
+polypot = PolynomialPotential(x = x, coeff = [0, -5, -7, 0.5, 1], lambd = lambd)
+T0 = 60
+mixedpot = TimeDependentPotential(x = x, pot1 = qho.potential, pot2 = polypot.potential, T0 = T0, dt = dt, N_steps = N_steps)
+V_x = mixedpot.potential
 
 # # specify initial momentum and quantities derived from it
 # p0 = np.sqrt(2 * m * 0.2 * V0)
@@ -82,8 +58,7 @@ p0 = m * v0
 k0 = p0 / hbar
 
 # specify initial wavefunction
-#psi_x0 = qho.eigenFunction(n = 0)
-psi_x0 = qho.coherenceState(v0, n = 0)
+psi_x0 = qho.eigenFunction(n = 0)
 
 # define the Schrodinger object which performs the calculations
 S = Schrodinger(x=x,
@@ -98,38 +73,22 @@ S = Schrodinger(x=x,
 fig = plt.figure()
 
 # plotting limits
-xlim = (-N, N)
-#klim = (-5, 5)
+xlim = (-8, 8)
+ymin = -2
+ymax = 4
 
-# top axes show the x-space data
-ymin = 0
-ymax = 10*hbar*omega
 ax1 = fig.add_subplot(111, xlim=xlim,
                             ylim=(ymin - 0.2 * (ymax - ymin),
                             ymax + 0.2 * (ymax - ymin)))
 psi_x_line, = ax1.plot([], [], c='r', label=r'$|\psi(x)|$')
 V_x_line, = ax1.plot([], [], c='k', label=r'$V(x)$')
+#V_x_line2, = ax1.plot(x, qho.potential, c='b')
+zero_line = ax1.axhline(0, c='gray', lw = 1)
+timetext = ax1.text(-1, 4.9, "")
 
-title = ax1.set_title("")
 ax1.legend(prop=dict(size=12))
 ax1.set_xlabel(r'$x$')
 ax1.set_ylabel(r'$|\psi(x)|$')
-
-# bottom axes show the k-space data
-# ymin = abs(S.psi_k).min()
-# ymax = abs(S.psi_k).max()
-# ax2 = fig.add_subplot(212, xlim=klim,
-#                       ylim=(ymin - 0.2 * (ymax - ymin),
-#                             ymax + 0.2 * (ymax - ymin)))
-# psi_k_line, = ax2.plot([], [], c='r', label=r'$|\psi(k)|$')
-
-# p0_line1 = ax2.axvline(-p0 / hbar, c='k', ls=':', label=r'$\pm p_0$')
-# p0_line2 = ax2.axvline(p0 / hbar, c='k', ls=':')
-# mV_line = ax2.axvline(np.sqrt(2 * V0) / hbar, c='k', ls='--',
-#                       label=r'$\sqrt{2mV_0}$')
-# ax2.legend(prop=dict(size=12))
-# ax2.set_xlabel('$k$')
-# ax2.set_ylabel(r'$|\psi(k)|$')
 
 V_x_line.set_data(S.x, S.V_x)
 
@@ -139,18 +98,21 @@ V_x_line.set_data(S.x, S.V_x)
 def init():
     psi_x_line.set_data([], [])
     V_x_line.set_data([], [])
+    timetext.set_text("")
 
-    title.set_text("")
-    return (psi_x_line, V_x_line, title)
+    return (psi_x_line, V_x_line, timetext)
 
 
 def animate(i):
+    mixedpot.time_step()
+    V_x = mixedpot.potential
+    S._set_V_x(V_x)
     S.time_step(dt, N_steps)
-    psi_x_line.set_data(S.x, abs(S.psi_x))
+    psi_x_line.set_data(S.x, 4*abs(S.psi_x))
     V_x_line.set_data(S.x, S.V_x)
+    timetext.set_text("t = %.2fs" % S.t)
 
-    title.set_text("t = %.2f" % S.t)
-    return (psi_x_line, V_x_line, title)
+    return (psi_x_line, V_x_line, timetext)
 
 # call the animator.
 # blit=True means only re-draw the parts that have changed.

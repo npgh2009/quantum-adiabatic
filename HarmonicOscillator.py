@@ -47,6 +47,7 @@ class HarmonicOscillator(object):
 		Parameters
 		--------
 		n : int, quantum number of eigenstate
+		--------
 		"""
 		if n > 0:
 			coeff = [0 for _ in range(n)]

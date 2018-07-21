@@ -5,6 +5,8 @@ First presented at http://jakevdp.github.com/blog/2012/09/05/quantum-python/
 
 Author: Jake Vanderplas <vanderplas@astro.washington.edu>
 License: BSD
+
+Edited by: npgh2009
 """
 
 import matplotlib.pyplot as plt
@@ -12,44 +14,6 @@ from matplotlib import animation
 import numpy as np
 from schrodinger import Schrodinger
 from HarmonicOscillator import HarmonicOscillator
-
-
-######################################################################
-# Helper functions for gaussian wave-packets
-def gauss_x(x, a, x0, k0):
-    """
-    a gaussian wave packet of width a, centered at x0, with momentum k0
-    """
-    return ((a * np.sqrt(np.pi)) ** (-0.5)
-            * np.exp(-0.5 * ((x - x0) * 1. / a) ** 2 + 1j * x * k0))
-
-
-def gauss_k(k, a, x0, k0):
-    """
-    analytical fourier transform of gauss_x(x), above
-    """
-    return ((a / np.sqrt(np.pi)) ** 0.5
-            * np.exp(-0.5 * (a * (k - k0)) ** 2 - 1j * (k - k0) * x0))
-
-
-######################################################################
-# Utility functions for running the animation
-def theta(x):
-    """
-    theta function :
-      returns 0 if x<=0, and 1 if x>0
-    """
-    x = np.asarray(x)
-    y = np.zeros(x.shape)
-    y[x > 0] = 1.0
-    return y
-
-
-def square_barrier(x, width, height):
-    return height * (theta(x) - theta(x - width))
-
-######################################################################
-# Create the animation
 
 # specify time steps and duration
 dt = 0.01
@@ -68,7 +32,7 @@ nx = int(N/dx)*2 + 1
 x = np.linspace(-N, N, nx)
 
 # specify potential
-omega = 0.2
+omega = 0.1
 qho = HarmonicOscillator(x = x, omega = omega, hbar = hbar, m = m)
 V_x = qho.potential
 alpha = m * omega / hbar
@@ -81,8 +45,8 @@ k0 = p0 / hbar
 
 # specify initial wavefunction
 
-#psi_x0 = qho.eigenFunction(n = 0)
-psi_x0 = qho.coherenceState(v0, n = 0)
+psi_x0 = qho.eigenFunction(n = 0)
+#psi_x0 = qho.coherenceState(v0, n = 0)
 #psi_x0 = qho.squeezeState(omegasq = 0.1)
 
 # define the Schrodinger object which performs the calculations

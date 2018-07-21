@@ -5,6 +5,7 @@ Polynomial potential implementation
 
 import numpy as np
 from numpy.polynomial.polynomial import polyval
+import matplotlib.pyplot as plt
 
 class PolynomialPotential(object):
 
@@ -24,8 +25,20 @@ class PolynomialPotential(object):
 		self.N = N
 
 		# Set internal parameters
-		self.coeff = numpy.asarray(coeff)
+		self.coeff = np.asarray(coeff)
 		self.lambd = lambd
 
 		# Compute potential
 		self.potential = polyval(x, lambd*self.coeff)
+
+def main():
+	x = np.linspace(-3,3,200)
+	polypot = PolynomialPotential(x, [0, -5, -7, 0.5, 1], lambd = 1)
+	# plt.xlim(-4,4)
+	# plt.ylim(-22,22)
+	plt.plot(x, polypot.potential, label = 'potential')
+	#plt.legend()
+	plt.show()
+
+if __name__ == "__main__":
+	main()
