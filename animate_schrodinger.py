@@ -42,10 +42,11 @@ x = np.linspace(-N, N, nx)
 # specify potential
 omega = 0.7 #the higher, the sharper is the potential, and eigenfns more localized
 qho = HarmonicOscillator(x = x, omega = omega, hbar = hbar, m = m)
+qho2 = HarmonicOscillator(x = x, omega = 2, hbar = hbar, m = m)
 lambd = 0.1
 polypot = PolynomialPotential(x = x, coeff = [0, -5, -7, 0.5, 1], lambd = lambd)
-T0 = 60
-mixedpot = TimeDependentPotential(x = x, pot1 = qho.potential, pot2 = polypot.potential, T0 = T0, dt = dt, N_steps = N_steps)
+T0 = 50
+mixedpot = TimeDependentPotential(x = x, pot1 = qho.potential, pot2 = qho2.potential, T0 = T0, dt = dt, N_steps = N_steps)
 V_x = mixedpot.potential
 
 # # specify initial momentum and quantities derived from it
@@ -122,7 +123,7 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
 
 # uncomment the following line to save the video in mp4 format.  This
 # requires either mencoder or ffmpeg to be installed on your system
-#anim.save('schrodinger_barrier.mp4', fps=15,
+#anim.save('schrodinger_time_dependent.mp4', fps=15,
 #          extra_args=['-vcodec', 'libx264'])
 
 plt.show()
